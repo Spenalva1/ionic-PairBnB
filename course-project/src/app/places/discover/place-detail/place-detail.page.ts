@@ -39,7 +39,7 @@ export class PlaceDetailPage implements OnInit {
           handler: () => {this.openBookingModal('select')}
         },
         {
-          text: 'Select date',
+          text: 'Random date',
           handler: () => {this.openBookingModal('random')}
         },
         {
@@ -55,13 +55,12 @@ export class PlaceDetailPage implements OnInit {
     this.modalCtrl
       .create({
         component: CreateBookingComponent,
-        componentProps: {selectedPlace: this.place}
+        componentProps: {selectedPlace: this.place, selectedMode: mode}
       }).then(modalEl =>{
         modalEl.present();
         return modalEl.onDidDismiss();
       }).then(resultData => {
-        console.log(resultData.data, resultData.role);
-        if(resultData.role === 'confirm') console.log("BOOKED!");
+        
       });
   }
 }
