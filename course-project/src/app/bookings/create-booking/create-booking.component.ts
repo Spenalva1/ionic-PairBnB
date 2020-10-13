@@ -2,7 +2,6 @@ import { getAttrsForDirectiveMatching } from '@angular/compiler/src/render3/view
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
-import { start } from 'repl';
 import { Place } from 'src/app/places/place.model';
 
 @Component({
