@@ -60,7 +60,8 @@ export class PlaceDetailPage implements OnInit {
         modalEl.present();
         return modalEl.onDidDismiss();
       }).then(resultData => {
-        
+        console.log(resultData.data.bookingData, resultData.role);
+
       });
   }
 }
