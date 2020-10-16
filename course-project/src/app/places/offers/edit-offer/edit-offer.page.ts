@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
 
@@ -13,8 +14,13 @@ import { PlacesService } from '../../places.service';
 export class EditOfferPage implements OnInit {
   form: FormGroup;
   place: Place;
+  private placeSub: Subscription;
 
-  constructor(private activatedRoute: ActivatedRoute, private navCtrl: NavController, private placesService: PlacesService) { }
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private navCtrl: NavController,
+    private placesService: PlacesService,
+    private router: Router) { }
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
@@ -22,34 +28,51 @@ export class EditOfferPage implements OnInit {
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
-      this.place = this.placesService.getPlaceById(paramMap.get('placeId'));
-      this.form = new FormGroup({
-        title: new FormControl(this.place.title,{
-          updateOn: 'blur',
-          validators: [Validators.required],
-        }),
-        description: new FormControl(this.place.description,{
-          updateOn: 'blur',
-          validators: [Validators.required, Validators.maxLength(180)],
-        }),
-        price: new FormControl(this.place.price,{
-          updateOn: 'blur',
-          validators: [Validators.required, Validators.min(1)],
-        }),
-        dateFrom: new FormControl(null,{
-          updateOn: 'blur',
-          validators: [Validators.required],
-        }),
-        dateTo: new FormControl(null,{
-          updateOn: 'blur',
-          validators: [Validators.required],
-        }),
-      });
+
+      this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
+        this.place = place;
+        this.form = new FormGroup({
+          title: new FormControl(this.place.title,{
+            updateOn: 'blur',
+            validators: [Validators.required],
+          }),
+          description: new FormControl(this.place.description,{
+            updateOn: 'blur',
+            validators: [Validators.required, Validators.maxLength(180)],
+          }),
+          price: new FormControl(this.place.price,{
+            updateOn: 'blur',
+            validators: [Validators.required, Validators.min(1)],
+          }),
+          dateFrom: new FormControl(this.place.availableFrom,{
+            updateOn: 'blur',
+            validators: [Validators.required],
+          }),
+          dateTo: new FormControl(null,{
+            updateOn: 'blur',
+            validators: [Validators.required],
+          }),
+        });
+      })
+
     });
   }
 
+  ngOnDestroy(){
+    this.placeSub.unsubscribe();
+  }
+
   onUpdateOffer(){
-    if(this.form.invalid) return;
+    this.placesService.updatePlace(this.place.id,
+      this.form.value.title,
+      this.form.value.description,
+      this.form.value.price,
+      this.form.value.dateFrom,
+      this.form.value.dateTo)
+    .subscribe(() => {
+      this.form.reset();
+      this.router.navigate(['places/tabs/offers']);
+    });
   }
 
 }

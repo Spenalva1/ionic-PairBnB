@@ -31,7 +31,7 @@
       </ion-row>
       <ion-row *ngIf="!form.get('description').valid && form.get('description').touched">
         <ion-col size-sm="3" offset-sm="3">
-          <p>Description must not be between 1 and 180 characters</p>
+          <p>Description must be between 1 and 180 characters</p>
         </ion-col>
       </ion-row>
       <ion-row>
@@ -46,14 +46,19 @@
         <ion-col size-sm="3" offset-sm="3">
           <ion-item>
             <ion-label position="floating">Available from</ion-label>
-            <ion-datetime min="2020-01-01" max="2020-12-31" formControlName="dateFrom"></ion-datetime>
+            <ion-datetime [min]="currentDate" formControlName="dateFrom"></ion-datetime>
           </ion-item>
         </ion-col>
         <ion-col size-sm="3">
           <ion-item>
             <ion-label position="floating">Available to</ion-label>
-            <ion-datetime min="2020-01-01" max="2020-12-31" formControlName="dateTo"></ion-datetime>
+            <ion-datetime formControlName="dateTo"></ion-datetime>
           </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row class="ion-margin-horizontal" *ngIf="!datesValid() &&  form.get('dateTo').touched">
+        <ion-col class="ion-margin-horizontal" size-sm="3" offset-sm="3">
+          <ion-text color="danger">Invalid dates!</ion-text>
         </ion-col>
       </ion-row>
     </ion-grid>

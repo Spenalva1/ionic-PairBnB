@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { take, map, tap } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { Place } from './place.model';
 
@@ -6,7 +8,7 @@ import { Place } from './place.model';
   providedIn: 'root'
 })
 export class PlacesService {
-  private _places: Place[] = [
+  private _places = new BehaviorSubject<Place[]>([
     new Place(
       'p1',
       'Manhattan Mansion',
@@ -25,7 +27,7 @@ export class PlacesService {
       499.99,
       new Date('2021-08-05'),
       new Date('2022-08-05'),
-      'cbd'
+      'bcd'
     ),
     new Place(
       'p3',
@@ -37,21 +39,38 @@ export class PlacesService {
       new Date('2021-01-05'),
       'cde'
     ),
-  ];
+  ]);
 
   get places(){
-    return [...this._places];
+    return this._places.asObservable();
   }
 
   constructor(private authService: AuthService) { }
 
   getPlaceById(placeId: string){
-    return {...this.places.find(place => place.id === placeId)};
+    return this.places.pipe(take(1), map(places => {
+      return { ...places.find(place => place.id === placeId)}
+    }));
   }
 
   addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date){
     const newPlace = new Place(Math.random().toString(), title, description, 'https://mapio.net/images-p/3326574.jpg', price, dateFrom, dateTo, this.authService.userId);
-    this._places.push(newPlace);
+    this.places.pipe(take(1)).subscribe(places =>{
+      this._places.next(places.concat(newPlace));
+    })
+  }
+
+  updatePlace(placeId: string, title: string, description: string, price: number, dateFrom: Date, dateTo: Date){
+    return this.places.pipe(take(1), tap(places => {
+      const updatedPlaceIndex = places.findIndex(place => place.id === placeId)
+      const updatedPlaces = [...places];
+      updatedPlaces[updatedPlaceIndex].title = title;
+      updatedPlaces[updatedPlaceIndex].description = description;
+      updatedPlaces[updatedPlaceIndex].price = price;
+      updatedPlaces[updatedPlaceIndex].availableFrom = dateFrom;
+      updatedPlaces[updatedPlaceIndex].availableTo = dateTo;
+      this._places.next(updatedPlaces);
+    }));
   }
 
 }

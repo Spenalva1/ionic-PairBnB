@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { LoadingController } from '@ionic/angular';
+import { PlacesService } from '../../places.service';
 
 @Component({
   selector: 'app-new-offer',
@@ -8,10 +11,12 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 })
 export class NewOfferPage implements OnInit {
   form: FormGroup;
+  currentDate: string
 
-  constructor() { }
+  constructor(private placesService: PlacesService, private router: Router, private loadingCtrl: LoadingController) { }
 
   ngOnInit() {
+    this.currentDate = (new Date((new Date()).getTime() - 24*60*60)).toISOString();
     this.form = new FormGroup({
       title: new FormControl(null,{
         updateOn: 'blur',
@@ -25,7 +30,7 @@ export class NewOfferPage implements OnInit {
         updateOn: 'blur',
         validators: [Validators.required, Validators.min(1)],
       }),
-      dateFrom: new FormControl(null,{
+      dateFrom: new FormControl(this.currentDate,{
         updateOn: 'blur',
         validators: [Validators.required],
       }),
@@ -36,8 +41,27 @@ export class NewOfferPage implements OnInit {
     });
   }
 
-  onCreateOffer(){   
-    if(this.form.invalid) return; 
+  async onCreateOffer(){
+    if(this.form.invalid || !this.datesValid()) return;
+    const loading = await this.loadingCtrl.create({
+      message: 'Adding place...',
+    });
+    await loading.present();
+    this.placesService.addPlace(
+      this.form.value.title,
+      this.form.value.description,
+      +this.form.value.price,
+      new Date(this.form.value.dateFrom),
+      new Date(this.form.value.dateTo));
+    this.form.reset();
+    await loading.dismiss();
+    this.router.navigate(['/places/tabs/offers']);
   }
 
+
+  datesValid(){
+    const startDate = new Date(this.form.value.dateFrom);
+    const endDate = new Date(this.form.value.dateTo);
+    return endDate > startDate;
+  }
 }
