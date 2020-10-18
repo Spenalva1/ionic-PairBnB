@@ -16,22 +16,22 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
   private placeSub: Subscription;
 
   constructor(private navCtrl: NavController,
-    private activatedRoute: ActivatedRoute,
-    private placesService: PlacesService,
-    private modalCtrl: ModalController,
-    private actionSheetCtrl: ActionSheetController
+              private activatedRoute: ActivatedRoute,
+              private placesService: PlacesService,
+              private modalCtrl: ModalController,
+              private actionSheetCtrl: ActionSheetController
   ) { }
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
-      if(!paramMap.has('placeId')){
+      if (!paramMap.has('placeId')){
         this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
-      this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place =>{
+      this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
         this.place = place;
       });
-    })
+    });
   }
 
   ngOnDestroy(): void {
@@ -44,11 +44,11 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       buttons: [
         {
           text: 'Select date',
-          handler: () => {this.openBookingModal('select')}
+          handler: () => {this.openBookingModal('select'); }
         },
         {
           text: 'Random date',
-          handler: () => {this.openBookingModal('random')}
+          handler: () => {this.openBookingModal('random'); }
         },
         {
           text: 'Cancel',
@@ -64,7 +64,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       .create({
         component: CreateBookingComponent,
         componentProps: {selectedPlace: this.place, selectedMode: mode}
-      }).then(modalEl =>{
+      }).then(modalEl => {
         modalEl.present();
         return modalEl.onDidDismiss();
       }).then(resultData => {
