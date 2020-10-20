@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonItemSliding } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/auth/auth.service';
 import { Place } from '../place.model';
 import { PlacesService } from '../places.service';
 
@@ -15,11 +16,11 @@ export class OffersPage implements OnInit, OnDestroy{
   private placesSub: Subscription;
   isLoading = false;
 
-  constructor(private placesService: PlacesService, private router: Router) { }
+  constructor(private placesService: PlacesService, private router: Router, private authService: AuthService) { }
 
   ngOnInit() {
     this.placesSub = this.placesService.places.subscribe(places => {
-      this.loadedOffers = places;
+      this.loadedOffers = places.filter(place => place.userId === this.authService.userId);
     });
   }
 

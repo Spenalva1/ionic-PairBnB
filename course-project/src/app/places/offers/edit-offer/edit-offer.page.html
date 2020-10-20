@@ -5,13 +5,16 @@
     </ion-buttons>
     <ion-title>Edit Offer</ion-title>
     <ion-buttons slot="primary">
-      <ion-button (click)="onUpdateOffer()" [disabled]="form.invalid"><ion-icon slot="icon-only" name="checkmark"></ion-icon></ion-button>
+      <ion-button *ngIf="!isLoading" (click)="onUpdateOffer()" [disabled]="form.invalid"><ion-icon slot="icon-only" name="checkmark"></ion-icon></ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <form [formGroup]="form">
+  <div *ngIf="isLoading" class="ion-text-center ion-margin ion-padding">
+    <ion-spinner *ngIf="isLoading"></ion-spinner>
+  </div>
+  <form *ngIf="!isLoading" [formGroup]="form">
     <ion-grid>
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">

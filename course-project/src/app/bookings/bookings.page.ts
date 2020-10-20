@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController, IonImg, IonItemSliding } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 import { Booking } from './booking.model';
 import { BookingService } from './booking.service';
 
@@ -12,12 +13,24 @@ import { BookingService } from './booking.service';
 export class BookingsPage implements OnInit, OnDestroy {
   loadedBookings: Booking[];
   private bookingsSub: Subscription;
+  isLoading = false;
 
-  constructor(private bookingService: BookingService, private alertCtrl: AlertController) { }
+  constructor(
+    private bookingService: BookingService,
+    private alertCtrl: AlertController,
+    private authService: AuthService,
+    ) { }
 
   ngOnInit() {
     this.bookingsSub = this.bookingService.bookings.subscribe(bookings => {
-      this.loadedBookings = bookings;
+      this.loadedBookings = bookings.filter(booking => booking.userId === this.authService.userId);
+    });
+  }
+
+  ionViewWillEnter() {
+    this.isLoading = true;
+    this.bookingService.fetchBookings().subscribe(() => {
+      this.isLoading = false;
     });
   }
 

@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/auth/auth.service';
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
 
@@ -15,21 +16,26 @@ export class EditOfferPage implements OnInit, OnDestroy {
   form: FormGroup;
   place: Place;
   private placeSub: Subscription;
+  isLoading = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private navCtrl: NavController,
     private placesService: PlacesService,
-    private router: Router) { }
+    private authService: AuthService
+    ) { }
 
   ngOnInit() {
+    this.isLoading = true;
     this.activatedRoute.paramMap.subscribe(paramMap => {
       if (!paramMap.has('placeId')){
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
-
       this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
+        if (place.userId !== this.authService.userId){
+          this.navCtrl.navigateBack('/places/tabs/offers');
+        }
         this.place = place;
         this.form = new FormGroup({
           title: new FormControl(this.place.title, {
@@ -53,8 +59,10 @@ export class EditOfferPage implements OnInit, OnDestroy {
             validators: [Validators.required],
           }),
         });
-      })
-
+        this.isLoading = false;
+      }, error => {
+        this.navCtrl.navigateBack('/places/tabs/offers');
+      });
     });
   }
 

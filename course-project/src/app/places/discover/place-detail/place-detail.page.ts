@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
+import { ActionSheetController, AlertController, ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { BookingService } from 'src/app/bookings/booking.service';
@@ -16,6 +16,7 @@ import { PlacesService } from '../../places.service';
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
   isBookable = false;
+  isLoading = false;
   private placeSub: Subscription;
 
   constructor(private navCtrl: NavController,
@@ -25,9 +26,11 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
               private actionSheetCtrl: ActionSheetController,
               private bookingService: BookingService,
               private authService: AuthService,
+              private alertCtrl: AlertController
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.isLoading = true;
     this.activatedRoute.paramMap.subscribe(paramMap => {
       if (!paramMap.has('placeId')){
         this.navCtrl.navigateBack('/places/tabs/discover');
@@ -36,6 +39,21 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
         this.place = place;
         this.isBookable = place.userId !== this.authService.userId;
+        this.isLoading = false;
+      }, error => {
+        this.alertCtrl.create({
+          message: 'Place not found!',
+          buttons: [
+            {
+              text: 'okay',
+              handler: () => {
+                this.navCtrl.navigateBack('/places/tabs/discover');
+              }
+            }
+          ]
+        }).then(alert => {
+          alert.present();
+        });
       });
     });
   }
