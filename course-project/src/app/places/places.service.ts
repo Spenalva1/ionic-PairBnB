@@ -49,15 +49,22 @@ export class PlacesService {
 
   getPlaceById(placeId: string){
     return this.places.pipe(take(1), map(places => {
-      return { ...places.find(place => place.id === placeId)}
+      return { ...places.find(place => place.id === placeId) };
     }));
   }
 
   addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date){
-    const newPlace = new Place(Math.random().toString(), title, description, 'https://mapio.net/images-p/3326574.jpg', price, dateFrom, dateTo, this.authService.userId);
-    this.places.pipe(take(1)).subscribe(places =>{
+    const newPlace = new Place(
+      Math.random().toString(),
+      title, description,
+      'https://mapio.net/images-p/3326574.jpg',
+      price,
+      dateFrom,
+      dateTo,
+      this.authService.userId);
+    this.places.pipe(take(1)).subscribe(places => {
       this._places.next(places.concat(newPlace));
-    })
+    });
   }
 
   updatePlace(placeId: string, title: string, description: string, price: number, dateFrom: Date, dateTo: Date){

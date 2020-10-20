@@ -19,10 +19,10 @@ export class DiscoverPage implements OnInit, OnDestroy {
   constructor(private placesService: PlacesService, private authService: AuthService) { }
 
   ngOnInit() {
-    this.placesSub = this.placesService.places.subscribe(places =>{
+    this.placesSub = this.placesService.places.subscribe(places => {
       this.loadedPlaces = places;
-      this.onFilterUpdate(this.filter)
-    })
+      this.onFilterUpdate(this.filter);
+    });
   }
 
   ngOnDestroy(): void {
@@ -30,9 +30,11 @@ export class DiscoverPage implements OnInit, OnDestroy {
   }
 
   onFilterUpdate(event: string){
-    if(event === 'all')
+    if (event === 'all'){
       this.relevantPlaces = this.loadedPlaces;
-    if(event === 'bookable')
+    }
+    if (event === 'bookable'){
       this.relevantPlaces = this.loadedPlaces.filter(place => place.userId !== this.authService.userId)
+    }
   }
 }

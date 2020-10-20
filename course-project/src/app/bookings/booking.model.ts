@@ -4,6 +4,11 @@ export class Booking{
         public placeId: string,
         public userId: string,
         public placeTitle: string,
-        public guestNumber: number,
+        public placeImage: string,
+        public firstName: string,
+        public LastName: string,
+        public guestsNumber: number,
+        public bookedFrom: Date,
+        public bookedTo: Date
     ){}
 }

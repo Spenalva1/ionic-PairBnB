@@ -21,9 +21,11 @@ export class CreateBookingComponent implements OnInit {
   ngOnInit() {
     const availableFrom = new Date(this.selectedPlace.availableFrom);
     const availableTo = new Date(this.selectedPlace.availableTo);
-    if(this.selectedMode === 'random'){
-      this.startDate = new Date(availableFrom.getTime() + Math.random() * (availableTo.getTime() - 7*24*60*60*1000 - availableFrom.getTime())).toISOString();
-      this.endDate = new Date(new Date(this.startDate).getTime() + Math.random() * 6*24*60*60*1000).toISOString();
+    if (this.selectedMode === 'random'){
+      this.startDate = new Date(
+        availableFrom.getTime()
+        + Math.random() * (availableTo.getTime() - 7 * 24 * 60 * 60 * 1000 - availableFrom.getTime())).toISOString();
+      this.endDate = new Date(new Date(this.startDate).getTime() + Math.random() * 6 * 24 * 60 * 60 * 1000).toISOString();
     }
   }
 
@@ -32,19 +34,21 @@ export class CreateBookingComponent implements OnInit {
   }
 
   onBookPlace(){
-    if(this.form.invalid || !this.datesValid()) return;
+    if (this.form.invalid || !this.datesValid()){
+      return;
+    }
     this.modalCtrl.dismiss({bookingData: {
-      firstName: this.form.value['firstName'],
-      lastName: this.form.value['lastName'],
-      guestsNumber: this.form.value['guestsNumber'],
-      dateFrom: this.form.value['dateFrom'],
-      dateTo: this.form.value['dateTo'],
-    }}, 'confirm')
+      firstName: this.form.value.firstName,
+      lastName: this.form.value.lastName,
+      guestsNumber: +this.form.value.guestsNumber,
+      dateFrom: new Date(this.form.value.dateFrom),
+      dateTo: new Date(this.form.value.dateTo),
+    }}, 'confirm');
   }
 
   datesValid(){
-    const startDate = new Date(this.form.value['dateFrom']);
-    const endDate = new Date(this.form.value['dateTo']);
+    const startDate = new Date(this.form.value.dateFrom);
+    const endDate = new Date(this.form.value.dateTo);
     return endDate > startDate;
   }
 }

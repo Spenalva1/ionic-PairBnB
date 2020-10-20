@@ -2,6 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController, ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/auth/auth.service';
+import { BookingService } from 'src/app/bookings/booking.service';
 import { CreateBookingComponent } from 'src/app/bookings/create-booking/create-booking.component';
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
@@ -13,13 +15,16 @@ import { PlacesService } from '../../places.service';
 })
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
+  isBookable = false;
   private placeSub: Subscription;
 
   constructor(private navCtrl: NavController,
               private activatedRoute: ActivatedRoute,
               private placesService: PlacesService,
               private modalCtrl: ModalController,
-              private actionSheetCtrl: ActionSheetController
+              private actionSheetCtrl: ActionSheetController,
+              private bookingService: BookingService,
+              private authService: AuthService,
   ) { }
 
   ngOnInit() {
@@ -30,6 +35,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       }
       this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
         this.place = place;
+        this.isBookable = place.userId !== this.authService.userId;
       });
     });
   }
@@ -38,7 +44,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     this.placeSub.unsubscribe();
   }
 
- async onBookPlace(){
+  async onBookPlace(){
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Choose wisely...',
       buttons: [
@@ -56,7 +62,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         },
       ]
     });
-    await actionSheet.present();
+    actionSheet.present();
   }
 
   openBookingModal(mode: 'select' | 'random'){
@@ -68,8 +74,19 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         modalEl.present();
         return modalEl.onDidDismiss();
       }).then(resultData => {
-        console.log(resultData.data.bookingData, resultData.role);
-
+        if (resultData.role === 'confirm'){
+          this.bookingService.addBooking(
+            this.place.id,
+            this.place.title,
+            this.place.imageUrl,
+            resultData.data.bookingData.firstName,
+            resultData.data.bookingData.lastName,
+            resultData.data.bookingData.guestsNumber,
+            resultData.data.bookingData.dateFrom,
+            resultData.data.bookingData.dateTo,
+          );
+          this.navCtrl.navigateRoot('bookings');
+        }
       });
   }
 }

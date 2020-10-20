@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { IonImg, IonItemSliding } from '@ionic/angular';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AlertController, IonImg, IonItemSliding } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { Booking } from './booking.model';
 import { BookingService } from './booking.service';
 
@@ -8,16 +9,41 @@ import { BookingService } from './booking.service';
   templateUrl: './bookings.page.html',
   styleUrls: ['./bookings.page.scss'],
 })
-export class BookingsPage implements OnInit {
+export class BookingsPage implements OnInit, OnDestroy {
   loadedBookings: Booking[];
-  constructor(private bookingService: BookingService) { }
+  private bookingsSub: Subscription;
+
+  constructor(private bookingService: BookingService, private alertCtrl: AlertController) { }
 
   ngOnInit() {
-    this.loadedBookings = this.bookingService.bookings;
+    this.bookingsSub = this.bookingService.bookings.subscribe(bookings => {
+      this.loadedBookings = bookings;
+    });
   }
 
-  onCancel(bookingId: string, ionItemSliding: IonItemSliding){
+  ngOnDestroy() {
+    this.bookingsSub.unsubscribe();
+  }
+
+  async onCancel(bookingId: string, ionItemSliding: IonItemSliding){
     ionItemSliding.close();
+    const alert = await this.alertCtrl.create({
+      header: 'Cancel',
+      message: 'Are you sure yout want to cancel it?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Continue',
+          handler: () => {
+            this.bookingService.cancelBookings(bookingId);
+          }
+        }
+      ]
+    });
+    alert.present();
   }
 
 }
