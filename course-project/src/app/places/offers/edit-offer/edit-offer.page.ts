@@ -79,7 +79,7 @@ export class EditOfferPage implements OnInit, OnDestroy {
       this.form.value.dateTo)
     .subscribe(() => {
       this.form.reset();
-      this.router.navigate(['places/tabs/offers']);
+      this.navCtrl.navigateRoot(['places/tabs/offers']);
     });
   }
 
