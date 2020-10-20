@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SegmentChangeEventDetail } from '@ionic/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { Place } from '../place.model';
@@ -15,6 +14,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
   relevantPlaces: Place[];
   private placesSub: Subscription;
   private filter = 'all';
+  isLoading = false;
 
   constructor(private placesService: PlacesService, private authService: AuthService) { }
 
@@ -22,6 +22,13 @@ export class DiscoverPage implements OnInit, OnDestroy {
     this.placesSub = this.placesService.places.subscribe(places => {
       this.loadedPlaces = places;
       this.onFilterUpdate(this.filter);
+    });
+  }
+
+  ionViewWillEnter() {
+    this.isLoading = true;
+    this.placesService.fetchPlaces().subscribe(() => {
+      this.isLoading = false;
     });
   }
 

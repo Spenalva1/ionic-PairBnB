@@ -8,12 +8,14 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid *ngIf="relevantPlaces.length > 0">
+  <ion-grid>
     <ion-segment value="all" (ionChange)="onFilterUpdate($event.detail.value)">
       <ion-segment-button value="all">All Places</ion-segment-button>
       <ion-segment-button value="bookable">Bookable Places</ion-segment-button>
     </ion-segment>
-    <ion-row>
+    <div class="ion-text-center"><ion-spinner *ngIf="isLoading"></ion-spinner></div>
+    <p class="ion-text-center" *ngIf="!isLoading && relevantPlaces.length <= 0">No places found</p>
+    <ion-row *ngIf="!isLoading && relevantPlaces.length > 0">
       <ion-col size-sm="8" offset-sm="2" class="ion-text-center">
         <ion-card>
           <ion-card-header>
@@ -32,7 +34,7 @@
         </ion-card>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="!isLoading && relevantPlaces.length > 1">
       <ion-col size-sm="8" offset-sm="2" class="ion-text-center">
         <ion-list>
           <ion-item *ngFor="let place of relevantPlaces.slice(1)" [routerLink]="['/', 'places', 'tabs', 'discover', place.id]" detail>

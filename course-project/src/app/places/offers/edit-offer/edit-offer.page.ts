@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
@@ -11,7 +11,7 @@ import { PlacesService } from '../../places.service';
   templateUrl: './edit-offer.page.html',
   styleUrls: ['./edit-offer.page.scss'],
 })
-export class EditOfferPage implements OnInit {
+export class EditOfferPage implements OnInit, OnDestroy {
   form: FormGroup;
   place: Place;
   private placeSub: Subscription;
@@ -24,7 +24,7 @@ export class EditOfferPage implements OnInit {
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
-      if(!paramMap.has('placeId')){
+      if (!paramMap.has('placeId')){
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
@@ -32,23 +32,23 @@ export class EditOfferPage implements OnInit {
       this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
         this.place = place;
         this.form = new FormGroup({
-          title: new FormControl(this.place.title,{
+          title: new FormControl(this.place.title, {
             updateOn: 'blur',
             validators: [Validators.required],
           }),
-          description: new FormControl(this.place.description,{
+          description: new FormControl(this.place.description, {
             updateOn: 'blur',
             validators: [Validators.required, Validators.maxLength(180)],
           }),
-          price: new FormControl(this.place.price,{
+          price: new FormControl(this.place.price, {
             updateOn: 'blur',
             validators: [Validators.required, Validators.min(1)],
           }),
-          dateFrom: new FormControl(this.place.availableFrom,{
+          dateFrom: new FormControl(this.place.availableFrom.toISOString(), {
             updateOn: 'blur',
             validators: [Validators.required],
           }),
-          dateTo: new FormControl(null,{
+          dateTo: new FormControl(this.place.availableTo.toISOString(), {
             updateOn: 'blur',
             validators: [Validators.required],
           }),
