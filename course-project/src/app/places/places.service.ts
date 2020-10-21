@@ -4,13 +4,15 @@ import { BehaviorSubject, of } from 'rxjs';
 import { take, map, tap, switchMap } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { Place } from './place.model';
+import { PlaceLocation } from './placeLocation.model';
 
 interface PlaceData {
   availableFrom: string;
   availableTo: string;
   description: string;
-  imageUrl: string;
+  location: PlaceLocation;
   price: number;
+  imageUrl: string;
   title: string;
   userId: string;
 }
@@ -73,8 +75,9 @@ export class PlacesService {
               key,
               resData[key].title,
               resData[key].description,
-              resData[key].imageUrl,
+              resData[key].location,
               resData[key].price,
+              resData[key].imageUrl,
               new Date(resData[key].availableFrom),
               new Date(resData[key].availableTo),
               resData[key].userId));
@@ -96,8 +99,9 @@ export class PlacesService {
             placeId,
             placeData.title,
             placeData.description,
-            placeData.imageUrl,
+            placeData.location,
             placeData.price,
+            placeData.imageUrl,
             new Date(placeData.availableFrom),
             new Date(placeData.availableTo),
             placeData.userId);
@@ -105,17 +109,19 @@ export class PlacesService {
       );
   }
 
-  addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date){
+  addPlace(title: string, description: string, location: PlaceLocation, price: number, dateFrom: Date, dateTo: Date){
     let generatedId: string;
     const newPlace = new Place(
       null,
       title,
       description,
-      'https://mapio.net/images-p/3326574.jpg',
+      location,
       price,
+      'https://mapio.net/images-p/3326574.jpg',
       dateFrom,
       dateTo,
-      this.authService.userId);
+      this.authService.userId
+    );
     return this.http
       .post<{name: string}>('https://ionic-course-project-741bb.firebaseio.com/offered-places.json', { ...newPlace })
       .pipe(

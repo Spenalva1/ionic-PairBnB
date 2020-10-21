@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { PlaceLocation } from 'src/app/places/location.model';
+import { PlaceLocation } from 'src/app/places/placeLocation.model';
 import { environment } from 'src/environments/environment';
 import { MapModalComponent } from '../../map-modal/map-modal.component';
 
@@ -13,6 +13,8 @@ import { MapModalComponent } from '../../map-modal/map-modal.component';
   styleUrls: ['./location-picker.component.scss'],
 })
 export class LocationPickerComponent implements OnInit {
+
+  @Output() locationPick = new EventEmitter<PlaceLocation>();
 
   selectedLocationStaticImageUrl: string;
   isLoading = false;
@@ -49,6 +51,7 @@ export class LocationPickerComponent implements OnInit {
     ).subscribe(staticMapImageUrl => {
       pickedLocation.staticMapImageUrl = staticMapImageUrl;
       this.selectedLocationStaticImageUrl = staticMapImageUrl;
+      this.locationPick.emit(pickedLocation);
       this.isLoading = false;
     });
   }
