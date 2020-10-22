@@ -71,6 +71,10 @@ export class NewOfferPage implements OnInit {
     });
   }
 
+  onImagePicked(imageData: string) {
+    console.log(imageData);
+
+  }
 
   datesValid(){
     const startDate = new Date(this.form.value.dateFrom);

@@ -1,5 +1,7 @@
 {
   "name": "course-project",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }
