@@ -109,7 +109,16 @@ export class PlacesService {
       );
   }
 
-  addPlace(title: string, description: string, location: PlaceLocation, price: number, dateFrom: Date, dateTo: Date){
+  uploadImage(image: File) {
+    const uploadData = new FormData();
+    uploadData.append('image', image);
+    return this.http.post<{imageUrl: string, imagePath: string}>(
+      'https://us-central1-ionic-course-project-741bb.cloudfunctions.net/storeImage',
+      uploadData
+    );
+  }
+
+  addPlace(title: string, description: string, location: PlaceLocation, imageUrl: string, price: number, dateFrom: Date, dateTo: Date){
     let generatedId: string;
     const newPlace = new Place(
       null,
@@ -117,7 +126,7 @@ export class PlacesService {
       description,
       location,
       price,
-      'https://mapio.net/images-p/3326574.jpg',
+      imageUrl,
       dateFrom,
       dateTo,
       this.authService.userId

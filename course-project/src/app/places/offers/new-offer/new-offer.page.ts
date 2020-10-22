@@ -2,8 +2,31 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
+import { switchMap } from 'rxjs/operators';
 import { PlaceLocation } from '../../placeLocation.model';
 import { PlacesService } from '../../places.service';
+
+function base64toBlob(base64Data, contentType) {
+  contentType = contentType || '';
+  const sliceSize = 1024;
+  const byteCharacters = atob(base64Data);
+  const bytesLength = byteCharacters.length;
+  const slicesCount = Math.ceil(bytesLength / sliceSize);
+  const byteArrays = new Array(slicesCount);
+
+  for (let sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+    const begin = sliceIndex * sliceSize;
+    const end = Math.min(begin + sliceSize, bytesLength);
+
+    const bytes = new Array(end - begin);
+    for (let offset = begin, i = 0; offset < end; ++i, ++offset) {
+      bytes[i] = byteCharacters[offset].charCodeAt(0);
+    }
+    byteArrays[sliceIndex] = new Uint8Array(bytes);
+  }
+  return new Blob(byteArrays, { type: contentType });
+}
+
 
 @Component({
   selector: 'app-new-offer',
@@ -42,27 +65,32 @@ export class NewOfferPage implements OnInit {
       location: new FormControl(null, {
         validators: [Validators.required],
       }),
+      image: new FormControl(null),
     });
   }
 
   async onCreateOffer(){
-    if (this.form.invalid || !this.datesValid()) {
+    if (this.form.invalid || !this.datesValid() || !this.form.get('image').value) {
       return;
     }
     const loading = await this.loadingCtrl.create({
       message: 'Adding place...',
     });
-    await loading.present();
-    this.placesService.addPlace(
-      this.form.value.title,
-      this.form.value.description,
-      this.form.value.location,
-      +this.form.value.price,
-      new Date(this.form.value.dateFrom),
-      new Date(this.form.value.dateTo));
-    this.form.reset();
-    await loading.dismiss();
-    this.router.navigate(['/places/tabs/offers']);
+    loading.present();
+    this.placesService.uploadImage(this.form.get('image').value).subscribe((uploadRes) => {
+      this.placesService.addPlace(
+        this.form.value.title,
+        this.form.value.description,
+        this.form.value.location,
+        uploadRes.imageUrl,
+        +this.form.value.price,
+        new Date(this.form.value.dateFrom),
+        new Date(this.form.value.dateTo)
+      );
+      this.form.reset();
+      loading.dismiss();
+      this.router.navigate(['/places/tabs/offers']);
+    });
   }
 
   onLocationPicked(placeLocation: PlaceLocation) {
@@ -71,9 +99,19 @@ export class NewOfferPage implements OnInit {
     });
   }
 
-  onImagePicked(imageData: string) {
-    console.log(imageData);
-
+  onImagePicked(imageData: string | File) {
+    let imageFile: any;
+    if (typeof imageData === 'string') {
+      try {
+        imageFile = base64toBlob(imageData, 'image/jpeg');
+      } catch (error) {
+        console.log('Error -> ', error);
+        return;
+      }
+    } else {
+      imageFile = imageData;
+    }
+    this.form.patchValue({ image : imageFile });
   }
 
   datesValid(){

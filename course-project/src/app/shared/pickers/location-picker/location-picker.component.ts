@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import { of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -16,6 +16,7 @@ import { Plugins, Capacitor } from '@capacitor/core';
 export class LocationPickerComponent implements OnInit {
 
   @Output() locationPicked = new EventEmitter<PlaceLocation>();
+  @Input() showPreview = false;
 
   selectedLocationStaticImageUrl: string;
   isLoading = false;

@@ -1,7 +1,7 @@
 <div class="ion-text-center picker">
     <ion-spinner *ngIf="isLoading"></ion-spinner>
-    <ion-img class="location-image" [src]="selectedLocationStaticImageUrl" (click)="onPickLocation()" *ngIf="selectedLocationStaticImageUrl && !isLoading"></ion-img>
-    <ion-button *ngIf="!selectedLocationStaticImageUrl && !isLoading" color="primary btn-picker" (click)="onPickLocation()">
+    <ion-img class="location-image" [src]="selectedLocationStaticImageUrl" (click)="onPickLocation()" *ngIf="selectedLocationStaticImageUrl && !isLoading && showPreview"></ion-img>
+    <ion-button *ngIf="(!selectedLocationStaticImageUrl && !isLoading) || !showPreview" color="primary btn-picker" (click)="onPickLocation()">
         <ion-icon name="map" slot="start"></ion-icon>
         <ion-label>
             Select Location
