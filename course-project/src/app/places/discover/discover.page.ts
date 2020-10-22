@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/auth.service';
 import { Place } from '../place.model';
 import { PlacesService } from '../places.service';
@@ -37,11 +38,16 @@ export class DiscoverPage implements OnInit, OnDestroy {
   }
 
   onFilterUpdate(event: string){
-    if (event === 'all'){
-      this.relevantPlaces = this.loadedPlaces;
-    }
-    if (event === 'bookable'){
-      this.relevantPlaces = this.loadedPlaces.filter(place => place.userId !== this.authService.userId);
-    }
+    this.authService.userId.pipe(take(1)).subscribe(userId => {
+      if (!userId){
+        throw new Error('No user found');
+      }
+      if (event === 'all'){
+        this.relevantPlaces = this.loadedPlaces;
+      }
+      if (event === 'bookable'){
+        this.relevantPlaces = this.loadedPlaces.filter(place => place.userId !== userId);
+      }
+    })
   }
 }

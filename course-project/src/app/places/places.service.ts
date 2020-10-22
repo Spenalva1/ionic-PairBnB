@@ -120,29 +120,36 @@ export class PlacesService {
 
   addPlace(title: string, description: string, location: PlaceLocation, imageUrl: string, price: number, dateFrom: Date, dateTo: Date){
     let generatedId: string;
-    const newPlace = new Place(
-      null,
-      title,
-      description,
-      location,
-      price,
-      imageUrl,
-      dateFrom,
-      dateTo,
-      this.authService.userId
-    );
-    return this.http
-      .post<{name: string}>('https://ionic-course-project-741bb.firebaseio.com/offered-places.json', { ...newPlace })
-      .pipe(
-        switchMap(resData => {
-          generatedId = resData.name;
-          return this.places;
-        }),
-        take(1))
-      .subscribe( places => {
-        newPlace.id = generatedId;
-        this._places.next(places.concat(newPlace));
-      });
+    let newPlace: Place;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId){
+          throw new Error('No user id found');
+        }
+        newPlace = new Place(
+          null,
+          title,
+          description,
+          location,
+          price,
+          imageUrl,
+          dateFrom,
+          dateTo,
+          userId
+        );
+        return this.http
+          .post<{name: string}>('https://ionic-course-project-741bb.firebaseio.com/offered-places.json', { ...newPlace })
+      }),
+      switchMap(resData => {
+        generatedId = resData.name;
+        return this.places;
+      }),
+      take(1))
+    .subscribe( places => {
+      newPlace.id = generatedId;
+      this._places.next(places.concat(newPlace));
+    });
   }
 
   updatePlace(placeId: string, title: string, description: string, price: number, dateFrom: Date, dateTo: Date){

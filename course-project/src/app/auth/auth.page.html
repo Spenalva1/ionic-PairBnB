@@ -12,12 +12,12 @@
           <ion-list>
             <ion-item>
               <ion-label position="floating">Email</ion-label>
-              <ion-input 
+              <ion-input
                 type="email"
-                ngModel 
-                name="email" 
-                required 
-                email 
+                ngModel
+                name="email"
+                required
+                email
                 #emailCtrl="ngModel"></ion-input>
             </ion-item>
             <ion-item *ngIf="!emailCtrl.valid && emailCtrl.touched" lines="none">
@@ -25,12 +25,12 @@
             </ion-item>
             <ion-item>
               <ion-label position="floating">Password</ion-label>
-              <ion-input type="password" 
-                ngModel 
-                name="password" 
-                required 
+              <ion-input type="password"
+                ngModel
+                name="password"
+                required
                 password
-                minlength="6" 
+                minlength="6"
                 #passwordCtrl="ngModel"></ion-input>
             </ion-item>
             <ion-item *ngIf="!passwordCtrl.valid && passwordCtrl.touched" lines="none">
@@ -41,22 +41,21 @@
       </ion-row>
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">
-          <ion-button 
-            type="button" 
-            color="primary" 
-            fill="clear" 
+          <ion-button
+            type="button"
+            color="primary"
+            fill="clear"
             expand="block"
             (click)="onSwitchAuthMode()">
               Switch to {{ isLogin ? 'signup' : 'login'}}
           </ion-button>
-          <ion-button 
-            [disabled]="!f.valid" 
-            class="ion-margin" 
-            color="primary" 
-            fill="outline" 
-            expand="block" 
-            type="submit" 
-            (click)="onLogin()">
+          <ion-button
+            [disabled]="!f.valid"
+            class="ion-margin"
+            color="primary"
+            fill="outline"
+            expand="block"
+            type="submit">
               {{ isLogin ? 'login' : 'signup'}}
           </ion-button>
         </ion-col>

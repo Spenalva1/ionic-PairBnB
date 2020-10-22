@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AlertController, IonImg, IonItemSliding } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { switchMap, take } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { Booking } from './booking.model';
 import { BookingService } from './booking.service';
@@ -22,8 +23,12 @@ export class BookingsPage implements OnInit, OnDestroy {
     ) { }
 
   ngOnInit() {
-    this.bookingsSub = this.bookingService.bookings.subscribe(bookings => {
-      this.loadedBookings = bookings.filter(booking => booking.userId === this.authService.userId);
+    this.authService.userId.pipe(
+      take(1)
+    ).subscribe(userId => {
+      this.bookingsSub = this.bookingService.bookings.subscribe(bookings => {
+        this.loadedBookings = bookings.filter(booking => userId);
+      });
     });
   }
 

@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController, AlertController, ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/auth.service';
 import { BookingService } from 'src/app/bookings/booking.service';
 import { CreateBookingComponent } from 'src/app/bookings/create-booking/create-booking.component';
@@ -37,9 +38,18 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
-      this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
+      let fetchedUserId: string;
+      this.authService.userId.pipe(
+        switchMap(userId => {
+          if (!userId){
+            throw new Error('No user found.');
+          }
+          fetchedUserId = userId;
+          return this.placesService.getPlaceById(paramMap.get('placeId'));
+        }
+      )).subscribe(place => {
         this.place = place;
-        this.isBookable = place.userId !== this.authService.userId;
+        this.isBookable = place.userId !== fetchedUserId;
         this.isLoading = false;
       }, error => {
         this.alertCtrl.create({
@@ -59,9 +69,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    this.placeSub.unsubscribe();
-  }
+  ngOnDestroy(): void {}
 
   async onBookPlace(){
     const actionSheet = await this.actionSheetCtrl.create({
