@@ -27,7 +27,7 @@ export class BookingsPage implements OnInit, OnDestroy {
       take(1)
     ).subscribe(userId => {
       this.bookingsSub = this.bookingService.bookings.subscribe(bookings => {
-        this.loadedBookings = bookings.filter(booking => userId);
+        this.loadedBookings = bookings.filter(booking => booking.userId === userId);
       });
     });
   }

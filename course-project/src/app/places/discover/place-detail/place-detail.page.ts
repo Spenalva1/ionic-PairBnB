@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController, AlertController, ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/auth.service';
 import { BookingService } from 'src/app/bookings/booking.service';
 import { CreateBookingComponent } from 'src/app/bookings/create-booking/create-booking.component';
@@ -40,6 +40,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       }
       let fetchedUserId: string;
       this.authService.userId.pipe(
+        take(1),
         switchMap(userId => {
           if (!userId){
             throw new Error('No user found.');

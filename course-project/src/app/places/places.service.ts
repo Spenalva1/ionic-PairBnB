@@ -65,8 +65,11 @@ export class PlacesService {
     private http: HttpClient) { }
 
   fetchPlaces() {
-    return this.http.get<{ [key: string]: PlaceData }>('https://ionic-course-project-741bb.firebaseio.com/offered-places.json')
-    .pipe(
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.get<{ [key: string]: PlaceData }>(`https://ionic-course-project-741bb.firebaseio.com/offered-places.json?auth=${token}`);
+      }),
       map(resData => {
         const places = [];
         for (const key in resData){
@@ -92,39 +95,59 @@ export class PlacesService {
   }
 
   getPlaceById(placeId: string){
-    return this.http.get<PlaceData>(`https://ionic-course-project-741bb.firebaseio.com/offered-places/${placeId}.json/`)
-      .pipe(
-        map(placeData => {
-          return new Place(
-            placeId,
-            placeData.title,
-            placeData.description,
-            placeData.location,
-            placeData.price,
-            placeData.imageUrl,
-            new Date(placeData.availableFrom),
-            new Date(placeData.availableTo),
-            placeData.userId);
-        })
-      );
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.get<PlaceData>(`https://ionic-course-project-741bb.firebaseio.com/offered-places/${placeId}.json?auth=${token}`);
+      }),
+      map(placeData => {
+        return new Place(
+          placeId,
+          placeData.title,
+          placeData.description,
+          placeData.location,
+          placeData.price,
+          placeData.imageUrl,
+          new Date(placeData.availableFrom),
+          new Date(placeData.availableTo),
+          placeData.userId);
+      })
+    );
   }
 
   uploadImage(image: File) {
     const uploadData = new FormData();
     uploadData.append('image', image);
-    return this.http.post<{imageUrl: string, imagePath: string}>(
-      'https://us-central1-ionic-course-project-741bb.cloudfunctions.net/storeImage',
-      uploadData
+
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.post<{imageUrl: string, imagePath: string}>(
+          'https://us-central1-ionic-course-project-741bb.cloudfunctions.net/storeImage',
+          uploadData,
+          {
+            headers: {
+              Authorization: 'Bearer ' + token
+            }
+          }
+        );
+      })
     );
   }
 
   addPlace(title: string, description: string, location: PlaceLocation, imageUrl: string, price: number, dateFrom: Date, dateTo: Date){
     let generatedId: string;
+    let fethcedUserId: string;
     let newPlace: Place;
     return this.authService.userId.pipe(
       take(1),
       switchMap(userId => {
-        if (!userId){
+        fethcedUserId = userId;
+        return this.authService.token;
+      }),
+      take(1),
+      switchMap(token => {
+        if (!fethcedUserId){
           throw new Error('No user id found');
         }
         newPlace = new Place(
@@ -136,10 +159,10 @@ export class PlacesService {
           imageUrl,
           dateFrom,
           dateTo,
-          userId
+          fethcedUserId
         );
         return this.http
-          .post<{name: string}>('https://ionic-course-project-741bb.firebaseio.com/offered-places.json', { ...newPlace })
+          .post<{name: string}>(`https://ionic-course-project-741bb.firebaseio.com/offered-places.json?auth=${token}`, { ...newPlace });
       }),
       switchMap(resData => {
         generatedId = resData.name;
@@ -154,7 +177,13 @@ export class PlacesService {
 
   updatePlace(placeId: string, title: string, description: string, price: number, dateFrom: Date, dateTo: Date){
     let updatedPlaces = [];
-    return this.places.pipe(
+    let fetchedToken: string;
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        fetchedToken = token;
+        return this.places;
+      }),
       take(1),
       switchMap(places => {
         if (!places || places.length <= 0){

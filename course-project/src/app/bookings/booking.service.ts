@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { stringify } from 'querystring';
 import { BehaviorSubject } from 'rxjs';
 import { first, map, switchMap, take, tap } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
@@ -34,41 +35,46 @@ export class BookingService {
 
 
   fetchBookings() {
+    let fetchedUserId: string;
     return this.authService.userId.pipe(
       take(1),
-      switchMap(userId =>{
+      switchMap(userId => {
         if (!userId){
           throw new Error('No user id found');
         }
+        fetchedUserId = userId;
+        return this.authService.token;
+      }),
+      switchMap(token => {
         return this.http.get<{ [key: string]: BookingData }>(
           `https://ionic-course-project-741bb.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${
-            this.authService.userId
-          }"`
+            fetchedUserId
+          }"&auth=${token}`
         );
       }),
       map(resData => {
-          const bookings = [];
-          for (const key in resData){
-            if (resData.hasOwnProperty(key)){
-              bookings.push(new Booking(
-                key,
-                resData[key].placeId,
-                resData[key].userId,
-                resData[key].placeTitle,
-                resData[key].placeImage,
-                resData[key].firstName,
-                resData[key].lastName,
-                resData[key].guestsNumber,
-                new Date(resData[key].dateFrom),
-                new Date(resData[key].dateTo)));
-            }
+        const bookings = [];
+        for (const key in resData){
+          if (resData.hasOwnProperty(key)){
+            bookings.push(new Booking(
+              key,
+              resData[key].placeId,
+              resData[key].userId,
+              resData[key].placeTitle,
+              resData[key].placeImage,
+              resData[key].firstName,
+              resData[key].lastName,
+              resData[key].guestsNumber,
+              new Date(resData[key].dateFrom),
+              new Date(resData[key].dateTo)));
           }
-          return bookings;
-        }),
-        tap(bookings => {
-          this._bookings.next(bookings);
-        })
-      );
+        }
+        return bookings;
+      }),
+      tap(bookings => {
+        this._bookings.next(bookings);
+      })
+    );
   }
 
 
@@ -83,6 +89,7 @@ export class BookingService {
     dateTo: Date
   ){
     let generatedId: string;
+    let fetchedUserId: string;
     let newBooking: Booking;
     return this.authService.userId.pipe(
       take(1),
@@ -90,10 +97,15 @@ export class BookingService {
         if (!userId){
           throw new Error('No user id foend');
         }
+        fetchedUserId = userId;
+        return this.authService.token;
+      }),
+      take(1),
+      switchMap(token => {
         newBooking = new Booking(
           null,
           placeId,
-          userId,
+          fetchedUserId,
           placeTitle,
           placeImage,
           firstName,
@@ -101,7 +113,8 @@ export class BookingService {
           guestsNumber,
           dateFrom,
           dateTo);
-        return this.http.post<{name: string}>('https://ionic-course-project-741bb.firebaseio.com/bookings.json', { ...newBooking });
+        return this.http.post<{name: string}>(`https://ionic-course-project-741bb.firebaseio.com/bookings.json?auth=${token}`,
+          { ...newBooking });
       }),
       switchMap(resData => {
         generatedId = resData.name;
@@ -115,15 +128,17 @@ export class BookingService {
   }
 
   cancelBookings(bookingId: string){
-    return this.http.delete(`https://ionic-course-project-741bb.firebaseio.com/bookings/${bookingId}.json`)
-      .pipe(
-        switchMap(() => {
-          return this.bookings;
-        }),
-        take(1)
-      )
-      .subscribe(bookings => {
-        this._bookings.next( bookings.filter(booking => booking.id !== bookingId ) );
-      });
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.delete(`https://ionic-course-project-741bb.firebaseio.com/bookings/${bookingId}.json?auth=${token}`);
+      }),
+      switchMap(() => {
+        return this.bookings;
+      }),
+      take(1)
+    ).subscribe(bookings => {
+      this._bookings.next( bookings.filter(booking => booking.id !== bookingId ) );
+    });
   }
 }

@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/auth.service';
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
@@ -32,37 +33,40 @@ export class EditOfferPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
-      this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
-        if (place.userId !== this.authService.userId){
+      this.authService.userId.pipe(take(1)).subscribe( userId => {
+        this.placeSub = this.placesService.getPlaceById(paramMap.get('placeId')).subscribe(place => {
+          if (place.userId !== userId){
+            console.log('Este lugar no te pertenece.');
+            this.navCtrl.navigateBack('/places/tabs/offers');
+          }
+          this.place = place;
+          this.form = new FormGroup({
+            title: new FormControl(this.place.title, {
+              updateOn: 'blur',
+              validators: [Validators.required],
+            }),
+            description: new FormControl(this.place.description, {
+              updateOn: 'blur',
+              validators: [Validators.required, Validators.maxLength(180)],
+            }),
+            price: new FormControl(this.place.price, {
+              updateOn: 'blur',
+              validators: [Validators.required, Validators.min(1)],
+            }),
+            dateFrom: new FormControl(this.place.availableFrom.toISOString(), {
+              updateOn: 'blur',
+              validators: [Validators.required],
+            }),
+            dateTo: new FormControl(this.place.availableTo.toISOString(), {
+              updateOn: 'blur',
+              validators: [Validators.required],
+            }),
+          });
+          this.isLoading = false;
+        }, error => {
           this.navCtrl.navigateBack('/places/tabs/offers');
-        }
-        this.place = place;
-        this.form = new FormGroup({
-          title: new FormControl(this.place.title, {
-            updateOn: 'blur',
-            validators: [Validators.required],
-          }),
-          description: new FormControl(this.place.description, {
-            updateOn: 'blur',
-            validators: [Validators.required, Validators.maxLength(180)],
-          }),
-          price: new FormControl(this.place.price, {
-            updateOn: 'blur',
-            validators: [Validators.required, Validators.min(1)],
-          }),
-          dateFrom: new FormControl(this.place.availableFrom.toISOString(), {
-            updateOn: 'blur',
-            validators: [Validators.required],
-          }),
-          dateTo: new FormControl(this.place.availableTo.toISOString(), {
-            updateOn: 'blur',
-            validators: [Validators.required],
-          }),
         });
-        this.isLoading = false;
-      }, error => {
-        this.navCtrl.navigateBack('/places/tabs/offers');
-      });
+      })
     });
   }
 
@@ -71,7 +75,8 @@ export class EditOfferPage implements OnInit, OnDestroy {
   }
 
   onUpdateOffer(){
-    this.placesService.updatePlace(this.place.id,
+    this.placesService.updatePlace(
+      this.place.id,
       this.form.value.title,
       this.form.value.description,
       this.form.value.price,
