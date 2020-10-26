@@ -200,7 +200,7 @@ export class PlacesService {
         updatedPlaces[updatedPlaceIndex].price = price;
         updatedPlaces[updatedPlaceIndex].availableFrom = dateFrom;
         updatedPlaces[updatedPlaceIndex].availableTo = dateTo;
-        return this.http.put(`https://ionic-course-project-741bb.firebaseio.com/offered-places/${placeId}.json/`,
+        return this.http.put(`https://ionic-course-project-741bb.firebaseio.com/offered-places/${placeId}.json/?auth=${fetchedToken}`,
           { ...updatedPlaces[updatedPlaceIndex] , id: null});
       }),
       tap(() => {

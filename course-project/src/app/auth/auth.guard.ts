@@ -9,19 +9,20 @@ import { AuthService } from './auth.service';
 })
 export class AuthGuard implements CanLoad {
 
-  constructor(private authSercive: AuthService, private router: Router){}
+  constructor(private authService: AuthService, private router: Router){}
 
   canLoad(
     route: Route,
     segments: UrlSegment[]
   ): Observable<boolean> | Promise<boolean> | boolean {
-    return this.authSercive.userIsAuthenticated.pipe(
+    return this.authService.userIsAuthenticated.pipe(
       take(1),
       switchMap(isAuthenticated => {
         if (!isAuthenticated){
-          return this.authSercive.autoLogin();
+          return this.authService.autoLogin();
+        } else{
+          return of(isAuthenticated);
         }
-        return of(isAuthenticated);
       }),
       tap(isAuthenticated => {
         if (!isAuthenticated){
