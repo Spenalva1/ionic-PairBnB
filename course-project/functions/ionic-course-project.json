@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "ionic-course-project-741bb",
+  "private_key_id": "ba1e56a072c4e80404428409e4a6cc24ab11e3a1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-63v0e@ionic-course-project-741bb.iam.gserviceaccount.com",
+  "client_id": "116913735131344923037",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-63v0e%40ionic-course-project-741bb.iam.gserviceaccount.com"
+}
